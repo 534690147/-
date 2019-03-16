@@ -1,0 +1,71 @@
+package changeable;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+/**
+ * 网络爬虫取链接
+ * @author zhangke
+ *
+ */
+public class webspidertest {
+	/**
+	 * 获得URLSTR对应的源码内容
+	 * @param urlstr
+	 * @return
+	 * @throws Throwable
+	 */
+	public static String geturlcontent(String urlstr,String charset) throws Throwable {
+		StringBuilder sb=new StringBuilder();
+		URL url = new URL(urlstr);
+		BufferedReader reader = new BufferedReader (new InputStreamReader (url.openStream(),Charset.forName(charset)));
+		String temp="";
+		while((temp=reader.readLine())!=null) {
+			sb.append(temp+"\n");
+		}
+		return sb.toString();
+	}
+	
+	public static List <String> getMatcherSubstrs(String destStr,String regexStr){
+		
+		//Pattern p=Pattern.compile("<a[\\s\\S]+</a>");//取超链接整个的内容
+		Pattern p=Pattern.compile(regexStr);//分组
+		Matcher m=p.matcher(destStr);
+		java.util.List<String> result=new ArrayList<String>();
+		while(m.find()) {
+			result.add(m.group(1));
+	}
+		return result;
+	}
+		
+	public static void main(String [] args) throws Throwable {
+		
+		String destStr=geturlcontent("http://www.163.com","gbk");
+		
+		List <String> result=getMatcherSubstrs(destStr,"href=\"([\\w\\s./:]+?)\"");
+		//System.out.println (result);
+		int n=0;
+		for(String temp:result) {
+			n++;
+			System.out.println(temp+"\n"+"---------------*****************-----------------");
+			String nextStr=geturlcontent(temp,"gbk");
+			List <String> resultnext=getMatcherSubstrs(nextStr,"href=\"([\\w\\s./:]+?)\"");
+			for(String temp2:resultnext) {
+				System.out.println(temp2);
+			}
+//			Pattern p=Pattern.compile("href=\"([\\w\\s./:]+?)\"");//分组
+//			Matcher m=p.matcher(nextStr);
+//			System.out.println(m.toString()+'\n');
+			if(n>=3) break;
+		}
+	
+	}
+}
+
